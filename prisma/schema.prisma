@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id     String      @id
+  guilds UserGuild[]
+
+  totalCount    Int       @default(0)
+  totalFails    Int       @default(0)
+  lastCountDate DateTime?
+  lastFailDate  DateTime?
+  highScore     Int?
+  highScoreDate DateTime?
+
+  lives Float @default(3)
+}
+
+model UserGuild {
+  userId  String
+  guildId String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guild   Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  totalCount    Int       @default(0)
+  totalFails    Int       @default(0)
+  lastCountDate DateTime?
+  lastFailDate  DateTime?
+  highScore     Int?
+  highScoreDate DateTime?
+
+  @@id([userId, guildId])
+}
+
+model Guild {
+  id    String      @id
+  users UserGuild[]
+
+  count            Int       @default(0)
+  lastCountDate    DateTime?
+  currentStartDate DateTime?
+  totalCount       Int       @default(0)
+  totalFails       Int       @default(0)
+  highScore        Int?
+  highScoreDate    DateTime?
+
+  lives Float  @default(3)
+  mode  String @default("default")
+}
