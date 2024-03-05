@@ -1,0 +1,38 @@
+{
+  "name": "counter",
+  "version": "1.0.0",
+  "description": "A Discord bot for counting",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "register": "node dist/register.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FinOCE/counter.git"
+  },
+  "keywords": [
+    "discord",
+    "fun",
+    "counting"
+  ],
+  "author": "FinOCE",
+  "bugs": {
+    "url": "https://github.com/FinOCE/counter/issues"
+  },
+  "homepage": "https://github.com/FinOCE/counter#readme",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.10.2",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.20",
+    "prisma": "^5.10.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
+  }
+}
