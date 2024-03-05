@@ -1,4 +1,5 @@
 import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js"
+import { about } from "./about"
 import { set } from "./set"
 import { leaderboard } from "./leaderboard"
 import { stats } from "./stats"
@@ -6,6 +7,8 @@ import { vote } from "./vote"
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   switch (interaction.commandName) {
+    case "about":
+      return await about.execute(interaction)
     case "leaderboard":
       return await leaderboard.execute(interaction)
     case "set":
@@ -21,5 +24,5 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 }
 
 export function register() {
-  return [leaderboard, set, stats, vote].map(command => command.data.toJSON())
+  return [about, leaderboard, set, stats, vote].map(command => command.data.toJSON())
 }
