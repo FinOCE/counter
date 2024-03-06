@@ -8,6 +8,6 @@ export const about = {
     .setDMPermission(true)
     .setNSFW(false),
   execute: async (interaction: ChatInputCommandInteraction) => {
-    interaction.reply({ embeds: [AboutEmbed()], ephemeral: true })
+    interaction.reply({ embeds: [AboutEmbed()], ephemeral: true }).catch(console.error)
   }
 }
