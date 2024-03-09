@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
 import { AboutEmbed } from "../embeds/AboutEmbed"
+import { PrismaClient } from "@prisma/client"
 
 export const about = {
   data: new SlashCommandBuilder()
@@ -7,7 +8,7 @@ export const about = {
     .setDescription("About this bot")
     .setDMPermission(true)
     .setNSFW(false),
-  execute: async (interaction: ChatInputCommandInteraction) => {
+  execute: async (prisma: PrismaClient, interaction: ChatInputCommandInteraction) => {
     interaction.reply({ embeds: [AboutEmbed()], ephemeral: true }).catch(console.error)
   }
 }

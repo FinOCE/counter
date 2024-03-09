@@ -34,7 +34,7 @@ client.on("messageCreate", async message => {
 // Handle slash commands
 client.on("interactionCreate", async interaction => {
   if (interaction.user.bot) return
-  if (interaction.isChatInputCommand()) await execute(interaction)
+  if (interaction.isChatInputCommand()) await execute(prisma, interaction)
 })
 
 // Login bot

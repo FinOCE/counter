@@ -49,6 +49,8 @@ model Guild {
   highScore        Int?
   highScoreDate    DateTime?
 
-  lives Float  @default(3)
-  mode  String @default("default")
+  lives     Float   @default(3)
+  mode      String  @default("default")
+  channelId String?
+  roleId    String?
 }

@@ -1,3 +1,4 @@
+import { PrismaClient } from "@prisma/client"
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
 
 export const stats = {
@@ -13,5 +14,5 @@ export const stats = {
         .addUserOption(option => option.setName("user").setDescription("The user to see stats about"))
     )
     .addSubcommand(subcommand => subcommand.setName("server").setDescription("See stats about this server")),
-  execute: async (interaction: ChatInputCommandInteraction) => {}
+  execute: async (prisma: PrismaClient, interaction: ChatInputCommandInteraction) => {}
 }

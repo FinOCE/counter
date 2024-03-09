@@ -1,5 +1,6 @@
-import { ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from "discord.js"
+import { ChatInputCommandInteraction, EmbedBuilder, PermissionFlagsBits, SlashCommandBuilder } from "discord.js"
 import { CountingStrategyProvider } from "../modes/CountingStrategyProvider"
+import { PrismaClient } from "@prisma/client"
 
 export const set = {
   data: new SlashCommandBuilder()
@@ -36,5 +37,55 @@ export const set = {
             .setChoices(...CountingStrategyProvider.listStrategies().map(({ name, value }) => ({ name, value })))
         )
     ),
-  execute: async (interaction: ChatInputCommandInteraction) => {}
+  execute: async (prisma: PrismaClient, interaction: ChatInputCommandInteraction) => {
+    const id = interaction.guild!.id
+
+    switch (interaction.options.getSubcommand()) {
+      case "channel": {
+        const channel = interaction.options.getChannel("channel")!
+        const channelId = channel.id
+
+        prisma.guild.upsert({
+          where: { id },
+          update: { channelId },
+          create: { id, channelId }
+        })
+
+        const embed = new EmbedBuilder().setDescription(`✅ Counter will now watch for counting in <#${channelId}>`)
+        await interaction.reply({ embeds: [embed], ephemeral: true }).catch(console.error)
+        break
+      }
+
+      case "role": {
+        const role = interaction.options.getRole("role")!
+        const roleId = role.id
+
+        prisma.guild.upsert({
+          where: { id },
+          update: { roleId },
+          create: { id, roleId }
+        })
+
+        const embed = new EmbedBuilder().setDescription(
+          `✅ Counter will now give <@&${roleId}> to users that count wrong`
+        )
+        await interaction.reply({ embeds: [embed], ephemeral: true }).catch(console.error)
+        break
+      }
+
+      case "mode": {
+        const mode = interaction.options.getString("mode")!
+
+        prisma.guild.upsert({
+          where: { id },
+          update: { mode },
+          create: { id, mode }
+        })
+
+        const embed = new EmbedBuilder().setDescription(`✅ Counter will now play in ${mode} mode`)
+        await interaction.reply({ embeds: [embed], ephemeral: true }).catch(console.error)
+        break
+      }
+    }
+  }
 }

@@ -1,3 +1,4 @@
+import { PrismaClient } from "@prisma/client"
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
 
 export const leaderboard = {
@@ -20,5 +21,5 @@ export const leaderboard = {
           subcommand.setName("users").setDescription("View the highest rated individual users")
         )
     ),
-  execute: async (interaction: ChatInputCommandInteraction) => {}
+  execute: async (prisma: PrismaClient, interaction: ChatInputCommandInteraction) => {}
 }
