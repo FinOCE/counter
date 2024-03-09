@@ -1,4 +1,4 @@
-import { Client } from "discord.js"
+import { Client, EmbedBuilder } from "discord.js"
 import dotenv from "dotenv"
 import { PrismaClient } from "@prisma/client"
 import { execute } from "./commands"
@@ -33,6 +33,7 @@ client.on("messageCreate", async message => {
 
   // Update db stats
   if (guild.count + 1 === parsed) {
+    // Correctly counted
     await prisma.guild.update({
       where: { id: message.guildId! },
       data: {
@@ -67,8 +68,9 @@ client.on("messageCreate", async message => {
       }
     })
 
-    // TODO: Send message
+    await message.react("✅").catch(console.error)
   } else if (user.lives >= 1) {
+    // Incorrectly counted, using user life
     await prisma.user.update({
       where: { id: user.id },
       data: {
@@ -76,8 +78,14 @@ client.on("messageCreate", async message => {
       }
     })
 
-    // TODO: Send message
+    await message.react("⚠️").catch(console.error)
+
+    const embed = new EmbedBuilder().setDescription(
+      `Wrong number, you used a life! You now have ${user.lives - 1} lives left.`
+    ) // TODO: Add link to vote to get more lives
+    message.reply({ embeds: [embed] }).catch(console.error)
   } else if (guild.lives >= 1) {
+    // Incorrectly counted, using guild life
     await prisma.guild.update({
       where: { id: message.guildId! },
       data: {
@@ -85,8 +93,17 @@ client.on("messageCreate", async message => {
       }
     })
 
-    // TODO: Send message
+    await message.react("⚠️").catch(console.error)
+    if (guild.roleId) await message.member!.roles.add(guild.roleId).catch(console.error)
+
+    const embed = new EmbedBuilder().setDescription(
+      `Wrong number, but the server count has been saved by a server life! You now have ${
+        guild.lives - 1
+      } server lives left.`
+    ) // TODO: Add link to vote to get more lives
+    message.reply({ embeds: [embed] }).catch(console.error)
   } else {
+    // Incorrectly counted, no lives left
     await prisma.guild.update({
       where: { id: message.guildId! },
       data: {
@@ -115,8 +132,13 @@ client.on("messageCreate", async message => {
       }
     })
 
-    // TODO: Send message
-    // TODO: Add can't count role
+    await message.react("❌").catch(console.error)
+    if (guild.roleId) await message.member!.roles.add(guild.roleId).catch(console.error)
+
+    const embed = new EmbedBuilder().setDescription(
+      `Count ruined at **${guild.count}**! You must now restart the count. Good luck!`
+    ) // TODO: Add link to vote to get more lives
+    message.reply({ embeds: [embed] }).catch(console.error)
   }
 })
 
