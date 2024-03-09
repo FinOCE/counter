@@ -3,28 +3,36 @@ import dotenv from "dotenv"
 import { PrismaClient } from "@prisma/client"
 import { execute } from "./commands"
 import { count, isMode } from "./utils/count"
+import { getGuildCache } from "./cache/GuildCache"
 
+// Setup clients and caches
 dotenv.config()
 
 const prisma = new PrismaClient()
-
 const client: Client<true> = new Client({ intents: ["Guilds", "GuildMessages", "MessageContent"] })
+
+const guildCache = getGuildCache()
 
 // Handle counting
 client.on("messageCreate", async message => {
   if (message.author.bot || message.channel.isDMBased()) return
 
-  // Fetch db data about the user and guild
-  const guild = await prisma.guild.findFirst({
+  // Check channelId with cache then fetch full data
+  const cachedGuild = await guildCache.get(message.guildId!)
+  if (cachedGuild && !cachedGuild.channelId) return
+
+  const res = await prisma.guild.findFirst({
     where: { id: message.guildId! },
     include: { users: { where: { userId: message.author.id }, include: { user: true } } }
   })
-  if (!guild) return
+  if (!res || !res.channelId) return
+  await guildCache.set(message.guildId!, { channelId: res.channelId, roleId: res.roleId })
 
-  const userGuild = guild.users[0]
-  const user = userGuild.user
+  const guild = res
+  const userGuild = res.users[0]
+  const user = res.users[0].user
 
-  // TODO: Cache mode to avoid fetching on every message
+  // TODO: Make sure user in db exists (just upsert?)
 
   // Parse message content using guild's mode
   if (!isMode(guild.mode)) return

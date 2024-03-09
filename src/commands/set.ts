@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder, PermissionFlagsBits, SlashCommandBuilder } from "discord.js"
 import { PrismaClient } from "@prisma/client"
 import { modes } from "../utils/count"
+import { getGuildCache } from "../cache/GuildCache"
 
 export const set = {
   data: new SlashCommandBuilder()
@@ -38,8 +39,12 @@ export const set = {
         )
     ),
   execute: async (prisma: PrismaClient, interaction: ChatInputCommandInteraction) => {
+    // Clear cached guild
     const id = interaction.guild!.id
+    const guildCache = getGuildCache()
+    guildCache.remove(id)
 
+    // Handle subcommands
     switch (interaction.options.getSubcommand()) {
       case "channel": {
         const channel = interaction.options.getChannel("channel")!
