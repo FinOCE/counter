@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, EmbedBuilder, PermissionFlagsBits, SlashCommandBuilder } from "discord.js"
-import { CountingStrategyProvider } from "../modes/CountingStrategyProvider"
 import { PrismaClient } from "@prisma/client"
+import { modes } from "../utils/count"
 
 export const set = {
   data: new SlashCommandBuilder()
@@ -34,7 +34,7 @@ export const set = {
             .setName("mode")
             .setDescription("The gamemode to play")
             .setRequired(true)
-            .setChoices(...CountingStrategyProvider.listStrategies().map(({ name, value }) => ({ name, value })))
+            .setChoices(...modes.map(([name, value]) => ({ name, value })))
         )
     ),
   execute: async (prisma: PrismaClient, interaction: ChatInputCommandInteraction) => {
