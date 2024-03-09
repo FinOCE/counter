@@ -50,7 +50,7 @@ export const set = {
         const channel = interaction.options.getChannel("channel")!
         const channelId = channel.id
 
-        prisma.guild.upsert({
+        await prisma.guild.upsert({
           where: { id },
           update: { channelId },
           create: { id, channelId }
@@ -65,7 +65,7 @@ export const set = {
         const role = interaction.options.getRole("role")!
         const roleId = role.id
 
-        prisma.guild.upsert({
+        await prisma.guild.upsert({
           where: { id },
           update: { roleId },
           create: { id, roleId }
@@ -81,7 +81,7 @@ export const set = {
       case "mode": {
         const mode = interaction.options.getString("mode")!
 
-        prisma.guild.upsert({
+        await prisma.guild.upsert({
           where: { id },
           update: { mode },
           create: { id, mode }

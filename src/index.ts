@@ -1,6 +1,6 @@
 import { Client, EmbedBuilder } from "discord.js"
 import dotenv from "dotenv"
-import { Guild, PrismaClient, User, UserGuild } from "@prisma/client"
+import { Guild, PrismaClient } from "@prisma/client"
 import { execute } from "./commands"
 import { count, isMode } from "./utils/count"
 import { getGuildCache } from "./cache/GuildCache"
@@ -18,41 +18,41 @@ client.on("messageCreate", async message => {
   if (message.author.bot || message.channel.isDMBased()) return
 
   // Check channelId with cache then fetch full data
-  const cachedGuild = await guildCache.get(message.guildId!)
-  if (cachedGuild && !cachedGuild.channelId) return
+  let cachedGuild = await guildCache.get(message.guildId!)
+  let fetchedGuild: Guild | null = null
 
-  // Fetch all relevant data from db
-  const res = await prisma.guild.findFirst({
-    where: { id: message.guildId! },
-    include: { users: { where: { userId: message.author.id }, include: { user: true } } }
-  })
-  if (!res || !res.channelId) return
-  await guildCache.set(message.guildId!, { channelId: res.channelId, roleId: res.roleId })
+  if (cachedGuild) {
+    if (!cachedGuild.channelId) return
+  } else {
+    const res = await prisma.guild.findFirst({ where: { id: message.guildId! } })
+    if (!res || !res.channelId) return
 
-  const guild: Guild = res
-  let userGuild: UserGuild = res.users?.[0]
-  let user: User = res.users?.[0]?.user
-
-  // Create user if not yet present and re-assign to above
-  if (!userGuild || !user) {
-    const res = await prisma.user.create({
-      data: {
-        id: message.author.id,
-        guilds: { create: { guildId: message.guildId! } }
-      },
-      include: {
-        guilds: { where: { guildId: message.guildId! } }
-      }
+    fetchedGuild = res
+    await guildCache.set(message.guildId!, {
+      channelId: fetchedGuild.channelId,
+      roleId: fetchedGuild.roleId,
+      mode: fetchedGuild.mode
     })
-
-    user = res
-    userGuild = res.guilds[0]
+    cachedGuild = await guildCache.get(message.guildId!)
   }
 
   // Parse message content using guild's mode
-  if (!isMode(guild.mode)) return
-  const parsed = count(guild.mode, message.content)
+  if (!isMode(cachedGuild!.mode)) return
+  const parsed = count(cachedGuild!.mode, message.content)
   if (parsed === null) return
+
+  // Fetch all relevant data from db
+  const guild = fetchedGuild ?? (await prisma.guild.findFirst({ where: { id: message.guildId! } }))
+  if (!guild) return
+
+  const user =
+    (await prisma.user.findFirst({ where: { id: message.author.id } })) ??
+    (await prisma.user.create({ data: { id: message.author.id } }))
+  const userGuild =
+    (await prisma.userGuild.findFirst({ where: { userId: message.author.id, guildId: message.guildId! } })) ??
+    (await prisma.userGuild.create({ data: { guildId: message.guildId!, userId: message.author.id } }))
+
+  // TODO: Only make these fetches/creates when necessary or periodically (will massively speed up the bot)
 
   // Update db stats
   if (guild.count + 1 === parsed) {

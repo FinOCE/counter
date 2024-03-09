@@ -8,7 +8,7 @@ export function count(mode: (typeof modes)[number][0], content: string) {
 }
 
 export function isMode(mode: string): mode is (typeof modes)[number][0] {
-  return modes.includes(mode as any)
+  return modes.some(m => m[0] === mode)
 }
 
 export const modes = [["default", "Default"]] as const
